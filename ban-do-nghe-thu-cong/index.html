@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dấu Nghề Việt | Bản đồ nghề thủ công đang mai một</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      :root {
+        --ink: #263c32;
+        --muted: #6e7c72;
+        --paper: #fbfaf6;
+        --cream: #f4f1e8;
+        --green: #2f6651;
+        --line: #e4e8dd;
+        --orange: #fff0d5;
+        --orange-text: #945314;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Be Vietnam Pro", sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .shell {
+        max-width: 1430px;
+        margin: auto;
+        padding: 0 38px;
+      }
+      .top {
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+      .nav {
+        height: 81px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-weight: 800;
+        font-size: 20px;
+      }
+      .mark {
+        background: #2d664d;
+        color: white;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        font-size: 23px;
+      }
+      .subnav {
+        display: flex;
+        gap: 27px;
+        color: #5b695e;
+        font-size: 13px;
+      }
+      .subnav a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .nav .pill {
+        border: 1px solid #d4dfd2;
+        background: #f6faf3;
+        padding: 11px 16px;
+        border-radius: 100px;
+        font-weight: 600;
+        color: #346747;
+        font-size: 12px;
+      }
+      .hero {
+        background:
+          radial-gradient(circle at 85% 15%, #e9efdf, transparent 33%),
+          linear-gradient(110deg, #f7f5ec, #f1f3e9);
+        padding: 51px 0 48px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 2.6px;
+        color: #718b6a;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .hero h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(35px, 4.2vw, 58px);
+        max-width: 710px;
+        margin: 14px 0 17px;
+        line-height: 1.18;
+        letter-spacing: -1px;
+      }
+      .hero p {
+        font-size: 14px;
+        line-height: 1.9;
+        max-width: 670px;
+        color: #67766b;
+        margin: 0;
+      }
+      .hero .mini {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+        font-size: 12px;
+        color: #5b735e;
+      }
+      .hero .mini strong {
+        color: #356549;
+      }
+      .main {
+        padding-top: 30px;
+        padding-bottom: 60px;
+      }
+      .sectionhead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 17px;
+      }
+      .sectionhead h2 {
+        font-size: 20px;
+        margin: 0;
+        letter-spacing: -0.6px;
+      }
+      .sectionhead small {
+        color: #889188;
+        font-size: 12px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 29px;
+      }
+      .stat {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 22px 22px 19px;
+        min-height: 133px;
+        transition: background 0.2s;
+      }
+      .stat .cap {
+        color: #7c8a7e;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .stat .num {
+        font-size: 33px;
+        font-weight: 800;
+        margin: 9px 0 5px;
+        letter-spacing: -1px;
+      }
+      .stat .hint {
+        font-size: 11px;
+        color: #849086;
+      }
+      .stat.warn {
+        background: var(--orange);
+        border-color: #f2cf97;
+      }
+      .stat.warn .num,
+      .stat.warn .hint {
+        color: var(--orange-text);
+      }
+      .stat.good {
+        background: #edf6ee;
+        border-color: #b7dbbf;
+      }
+      .stat.good .num {
+        color: #236b43;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1.65fr) minmax(315px, 1fr);
+        gap: 20px;
+      }
+      .mapbox,
+      .side,
+      .sourcebox {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 17px;
+        overflow: hidden;
+      }
+      .cardhead {
+        padding: 20px 22px 17px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .cardhead h3 {
+        font-size: 16px;
+        margin: 0;
+      }
+      .cardhead span {
+        font-size: 11px;
+        color: #899488;
+      }
+      .filters {
+        display: flex;
+        gap: 9px;
+        padding: 0 18px 15px;
+      }
+      .filters input,
+      .filters select {
+        padding: 12px;
+        border: 1px solid #e2e7df;
+        background: #f8faf6;
+        border-radius: 9px;
+        color: #3c5345;
+        min-width: 0;
+        font-size: 12px;
+      }
+      .filters input {
+        flex: 1;
+      }
+      .filters select {
+        width: 155px;
+      }
+      #map {
+        height: 475px;
+        background: #e9efe5;
+      }
+      .mapfoot {
+        display: flex;
+        gap: 13px;
+        align-items: center;
+        padding: 17px 20px;
+        font-size: 11px;
+        color: #819084;
+      }
+      .dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        background: #cf8050;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+      .side {
+        max-height: 615px;
+        overflow: auto;
+      }
+      .side .cardhead {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 2;
+      }
+      .entry {
+        border-top: 1px solid #edf0e9;
+        padding: 17px 20px;
+        display: flex;
+        gap: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .entry:hover,
+      .entry.active {
+        background: #f5f8f2;
+      }
+      .symbol {
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.symbol img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+      .entry h4 {
+        font-size: 13px;
+        margin: 0 0 6px;
+      }
+      .entry .where {
+        font-size: 11px;
+        color: #829083;
+      }
+      .entry p {
+        font-size: 11px;
+        color: #69796d;
+        line-height: 1.7;
+        margin: 8px 0 0;
+      }
+      .badge {
+        display: inline-block;
+        background: #fff0df;
+        color: #a36b32;
+        font-size: 10px;
+        border-radius: 20px;
+        padding: 5px 8px;
+        margin-top: 10px;
+      }
+      .sources {
+        margin-top: 24px;
+      }
+      .sourcebox {
+        padding: 22px;
+      }
+      .sourceintro {
+        color: #7a887b;
+        font-size: 12px;
+        line-height: 1.8;
+        margin: -2px 0 18px;
+      }
+      .form {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr auto;
+        gap: 10px;
+      }
+      .form input,
+      .form select {
+        border: 1px solid #dce4da;
+        border-radius: 9px;
+        padding: 12px;
+        font-size: 12px;
+        min-width: 0;
+        background: #fff;
+      }
+      .btn {
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 12px 17px;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .status {
+        margin: 16px 0;
+        padding: 12px 14px;
+        border-radius: 9px;
+        background: #fff0d7;
+        color: #945b20;
+        font-size: 12px;
+      }
+      .status.ok {
+        background: #e5f4e8;
+        color: #216a44;
+      }
+      .source-list {
+        display: grid;
+        gap: 9px;
+      }
+      .src {
+        background: #f8faf7;
+        border: 1px solid #e7ede4;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-radius: 10px;
+        padding: 12px 13px;
+      }
+      .src strong {
+        display: block;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .src small {
+        display: block;
+        font-size: 10px;
+        color: #7b897f;
+        margin-top: 5px;
+      }
+      .src a {
+        color: #2e6c50;
+      }
+      .delete {
+        background: none;
+        border: none;
+        color: #a56155;
+        font-size: 12px;
+        padding: 7px;
+      }
+      .empty {
+        padding: 25px;
+        background: #fafbf8;
+        border: 1px dashed #d6e0d5;
+        border-radius: 10px;
+        color: #819080;
+        font-size: 12px;
+        text-align: center;
+      }
+      .footer {
+        padding: 26px 0;
+        text-align: center;
+        color: #89968b;
+        font-size: 11px;
+        border-top: 1px solid var(--line);
+      }
+      .leaflet-popup-content {
+        font-family: "Be Vietnam Pro", sans-serif;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      @media (max-width: 960px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          max-height: 420px;
+        }
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .form {
+          grid-template-columns: 1fr 1fr;
+        }
+        .form .btn {
+          grid-column: span 2;
+        }
+        .subnav {
+          display: none;
+        }
+      }
+      @media (max-width: 560px) {
+        .shell {
+          padding: 0 16px;
+        }
+        .hero {
+          padding: 35px 0;
+        }
+        .nav {
+          height: 70px;
+        }
+        .brand {
+          font-size: 16px;
+        }
+        .nav .pill {
+          display: none;
+        }
+        .stats {
+          gap: 9px;
+        }
+        .stat {
+          padding: 16px;
+          min-height: 116px;
+        }
+        .stat .num {
+          font-size: 27px;
+        }
+        .filters {
+          flex-direction: column;
+        }
+        .filters select {
+          width: 100%;
+        }
+        .form {
+          grid-template-columns: 1fr;
+        }
+        .form .btn {
+          grid-column: auto;
+        }
+        #map {
+          height: 350px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="shell nav">
+        <div class="brand">
+          <div class="mark">✳</div>
+          Dấu Nghề Việt
+        </div>
+        <nav class="subnav">
+          <a href="#ban-do">Khám phá bản đồ</a
+          ><a href="#lang-nghe">Danh sách nghề</a
+          ><a href="#tu-lieu">Kho tư liệu</a>
+        </nav>
+        <span class="pill">✦ Di sản văn hóa Việt Nam</span>
+      </div>
+    </header>
+    <section class="hero">
+      <div class="shell">
+        <div class="eyebrow">Dự án lưu giữ ký ức làng nghề</div>
+        <h1>Giữ dấu nghề xưa,<br />kết nối những giá trị mai sau.</h1>
+        <p>
+          Khám phá bản đồ các nghề thủ công truyền thống có nguy cơ mai một. Mỗi
+          địa danh là một câu chuyện, mỗi nghề là một phần ký ức văn hóa cần
+          được gìn giữ.
+        </p>
+        <div class="mini">
+          <span>✧ <strong>Bản đồ tương tác</strong> theo địa phương</span
+          ><span>✧ <strong>Kho tư liệu</strong> có kiểm đếm</span
+          ><span>✧ <strong>Dữ liệu minh họa</strong> có thể mở rộng</span>
+        </div>
+      </div>
+    </section>
+    <main class="shell main">
+      <div class="sectionhead">
+        <h2>Tổng quan dự án</h2>
+        <small>Cập nhật tức thời khi thêm / xóa tư liệu</small>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="cap">Nghề trên bản đồ</div>
+          <div class="num" id="craftCount">5</div>
+          <div class="hint">Địa điểm minh họa</div>
+        </div>
+        <div class="stat">
+          <div class="cap">Địa phương được giới thiệu</div>
+          <div class="num" id="provinceCount">5</div>
+          <div class="hint">Có thể bổ sung dữ liệu</div>
+        </div>
+        <div class="stat warn" id="totalCard">
+          <div class="cap">Tổng số nguồn tư liệu</div>
+          <div class="num" id="sourceCount">0 / 7</div>
+          <div class="hint" id="totalHint">⚠ Chưa đủ tối thiểu 7 nguồn</div>
+        </div>
+        <div class="stat warn" id="officialCard">
+          <div class="cap">Nguồn chính thống</div>
+          <div class="num" id="officialCount">0 / 3</div>
+          <div class="hint" id="officialHint">
+            ⚠ Chưa đủ 3 nguồn chính thống
+          </div>
+        </div>
+      </div>
+      <div class="workspace">
+        <section class="mapbox" id="ban-do">
+          <div class="cardhead">
+            <h3>Bản đồ làng nghề</h3>
+            <span>Việt Nam · Bản đồ tương tác</span>
+          </div>
+          <div class="filters">
+            <input
+              id="search"
+              placeholder="⌕  Tìm tên nghề hoặc địa phương..."
+              aria-label="Tìm kiếm nghề"
+            /><select id="region" aria-label="Lọc khu vực">
+              <option value="all">Tất cả khu vực</option>
+              <option value="Bắc">Miền Bắc</option>
+              <option value="Trung">Miền Trung</option>
+              <option value="Nam">Miền Nam</option>
+            </select>
+          </div>
+          <div id="map"></div>
+          <div class="mapfoot">
+            <span><i class="dot"></i> Điểm nghề thủ công (vị trí gần đúng)</span
+            ><span>Di chuyển / thu phóng để khám phá</span>
+          </div>
+        </section>
+        <aside class="side" id="lang-nghe">
+          <div class="cardhead">
+            <h3>Những dấu nghề cần lưu giữ</h3>
+            <span id="visibleCount">5 nghề</span>
+          </div>
+          <div id="craftList"></div>
+        </aside>
+      </div>
+      <section class="sources" id="tu-lieu">
+        <div class="sectionhead">
+          <h2>Kho nguồn tư liệu</h2>
+          <small>Yêu cầu: ≥ 7 nguồn, trong đó ≥ 3 nguồn chính thống</small>
+        </div>
+        <div class="sourcebox">
+          <p class="sourceintro">
+            Đã bổ sung 7 đường dẫn bài viết/tài liệu tham khảo để bạn mở đọc và
+            kiểm tra. Có thể thêm, xóa hoặc thay thế nguồn theo yêu cầu của giáo
+            viên. “Chính thống” nên được chọn cho nguồn từ cơ quan nhà nước, bảo
+            tàng, tổ chức nghiên cứu hoặc cơ quan có thẩm quyền phù hợp. Nguồn
+            sẽ được lưu trên trình duyệt hiện tại.
+          </p>
+          <form id="sourceForm" class="form">
+            <input
+              id="sourceName"
+              placeholder="Tên nguồn tư liệu"
+              required
+              maxlength="160"
+            /><input
+              id="sourceUrl"
+              type="url"
+              placeholder="https://..."
+              required
+            /><select id="sourceType">
+              <option value="official">Nguồn chính thống</option>
+              <option value="other">Nguồn khác</option></select
+            ><button class="btn" type="submit">+ Thêm nguồn</button>
+          </form>
+          <div class="status" id="sourceStatus" role="status">
+            Chưa đạt: cần bổ sung ít nhất 7 nguồn, trong đó 3 nguồn chính thống.
+          </div>
+          <div id="sourceList" class="source-list"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      Dấu Nghề Việt • Website mẫu phục vụ dự án học tập • Nội dung và tọa độ
+      nghề mang tính giới thiệu, cần kiểm chứng trước khi công bố chính thức.
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const crafts = [
+        {
+          id: 1,
+          name: "Tranh dân gian Đông Hồ",
+          place: "Bắc Ninh",
+          region: "Bắc",
+          lat: 21.07,
+          lng: 106.09,       
+          image: "images/dong-ho.jpg",
+          desc: "Nghề làm tranh in mộc bản và màu tự nhiên, gắn với văn hóa dân gian vùng Kinh Bắc.",
+        },
+        {
+          id: 2,
+          name: "Làng gốm Phù Lãng",
+          place: "Bắc Ninh",
+          region: "Bắc",
+          lat: 21.11,
+          lng: 106.18,
+       
+          image: "images/phu-lang.jpg",
+          desc: "Dòng gốm truyền thống mang dấu ấn men nâu và kỹ thuật tạo hình thủ công.",
+        },
+        {
+          id: 3,
+          name: "Nghề dệt thổ cẩm Mỹ Nghiệp",
+          place: "Khánh Hòa (khu vực Ninh Thuận cũ)",
+          region: "Trung",
+          lat: 11.6,
+          lng: 108.95,
+    
+          image: "images/my-nghiep.webp",
+          desc: "Kỹ thuật dệt của cộng đồng Chăm được truyền lại qua nhiều thế hệ.",
+        },
+        {
+          id: 4,
+          name: "Làng đúc đồng Phước Kiều",
+          place: "Đà Nẵng (khu vực Quảng Nam cũ)",
+          region: "Trung",
+          lat: 15.87,
+          lng: 108.26,
+      
+          image: "images/phuoc-kieu.jpg",
+          desc: "Nghề đúc đồng truyền thống gắn với nhạc cụ, đồ thờ và sản phẩm mỹ nghệ.",
+        },
+        {
+          id: 5,
+          name: "Nghề làm chiếu Định Yên",
+          place: "Đồng Tháp",
+          region: "Nam",
+          lat: 10.35,
+          lng: 105.53,
+       
+          image: "images/dinh-yen.jpg",
+          desc: "Nghề dệt chiếu cói và ký ức chợ chiếu nổi tiếng của vùng sông nước.",
+        },
+      ];
+      // Bảy bài/tài liệu có liên kết trực tiếp được biên tập sẵn cho dự án.
+      const starterSources = [
+        {
+          name: "Cục Di sản văn hóa – Tranh dân gian Đông Hồ",
+          url: "https://dsvh.gov.vn/tranh-dan-gian-dong-ho-3151",
+          type: "official",
+        },
+        {
+          name: "Cục Di sản văn hóa – Nghề dệt chiếu ở Đồng Tháp (Định Yên)",
+          url: "https://dsvh.gov.vn/nghe-det-chieu-o-dong-thap-22265",
+          type: "official",
+        },
+        {
+          name: "Sở VHTTDL Bắc Ninh – Gốm Bắc Ninh “du lịch” Nhật Bản (Phù Lãng)",
+          url: "https://svhttdl.bacninh.gov.vn/news?_newsdetail_WAR_bacninhportlet_languageId=vi_VN&_newsdetail_WAR_bacninhportlet_print=true&_newsdetail_WAR_bacninhportlet_urlTitle=gom-bac-ninh-du-lich-nhat-ban-3483414&_newsdetail_WAR_bacninhportlet_viewMode=print&p_p_id=newsdetail_WAR_bacninhportlet&p_p_lifecycle=0&p_p_mode=view&p_p_state=pop_up",
+          type: "official",
+        },
+        {
+          name: "VietnamPlus – Xây dựng hồ sơ đề nghị UNESCO công nhận nghề tranh Đông Hồ",
+          url: "https://www.vietnamplus.vn/xay-dung-ho-so-de-nghi-unesco-cong-nhan-nghe-lam-tranh-dong-ho/510186.vnp",
+          type: "other",
+        },
+        {
+          name: "VietnamPlus – Tìm lại nguyên gốc kỹ thuật làm tranh Đông Hồ",
+          url: "https://www.vietnamplus.vn/tim-lai-nguyen-goc-ky-thuat-lam-tranh-dong-ho-post17289.vnp",
+          type: "other",
+        },
+        {
+          name: "Báo Văn Hóa – Lan tỏa hình ảnh làng nghề Việt Nam (có gốm Phù Lãng)",
+          url: "https://baovanhoa.vn/nghe-thuat/lan-toa-hinh-anh-lang-nghe-viet-nam-qua-ong-kinh-nhiep-anh-134061.html",
+          type: "other",
+        },
+        {
+          name: "Báo Thanh Niên – Đục ngược trên tranh đồng (Phước Kiều)",
+          url: "https://thanhnien.vn/duc-nguoc-tren-tranh-dong-185241231180831223.htm",
+          type: "other",
+        },
+      ];
+      let sources = [];
+      try {
+        const stored = localStorage.getItem("dauNgheSources");
+        const saved = stored === null ? [] : JSON.parse(stored);
+        if (Array.isArray(saved))
+          sources = saved.filter(
+            (x) =>
+              x &&
+              typeof x.name === "string" &&
+              typeof x.url === "string" &&
+              (x.type === "official" || x.type === "other"),
+          );
+        // Nạp bộ tư liệu mới đúng một lần, vẫn giữ nguồn người dùng đã nhập trước đây.
+        if (localStorage.getItem("dauNgheSourcesSeededV1") !== "yes") {
+          const seen = new Set(sources.map((x) => x.url));
+          for (const sample of starterSources) {
+            if (!seen.has(sample.url)) {
+              sources.push(sample);
+              seen.add(sample.url);
+            }
+          }
+          localStorage.setItem("dauNgheSources", JSON.stringify(sources));
+          localStorage.setItem("dauNgheSourcesSeededV1", "yes");
+        }
+      } catch (e) {
+        if (!sources.length) sources = starterSources.map((x) => ({ ...x }));
+      }
+
+      const $ = (x) => document.getElementById(x),
+        escapeHtml = (s) =>
+          String(s).replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+      const map = L.map("map", { scrollWheelZoom: false }).setView(
+        [16.8, 106.4],
+        6,
+      );
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
+      const markers = L.layerGroup().addTo(map);
+      let selected = null;
+      function renderCrafts() {
+        const q = $("search").value.trim().toLocaleLowerCase("vi"),
+          r = $("region").value;
+        const result = crafts.filter(
+          (c) =>
+            (r === "all" || c.region === r) &&
+            (c.name + " " + c.place).toLocaleLowerCase("vi").includes(q),
+        );
+        $("visibleCount").textContent = result.length + " nghề";
+        $("craftList").innerHTML = result.length
+          ? result
+              .map(
+                (c) =>
+                  `<article class="entry ${selected === c.id ? "active" : ""}" data-id="${c.id}" tabindex="0"><div class="symbol">
+  <img src="${c.image}" alt="${escapeHtml(c.name)}">
+</div><div><h4>${escapeHtml(c.name)}</h4><div class="where">⌖ ${escapeHtml(c.place)}</div><p>${escapeHtml(c.desc)}</p><span class="badge">Cần khảo sát mức độ mai một</span></div></article>`,
+              )
+              .join("")
+          : '<div class="empty">Không tìm thấy nghề phù hợp.</div>';
+        markers.clearLayers();
+        result.forEach((c) => {
+          const marker = L.circleMarker([c.lat, c.lng], {
+            radius: 9,
+            weight: 3,
+            color: "#fff",
+            fillColor: "#c97d4d",
+            fillOpacity: 1,
+          })
+            .addTo(markers)
+            .bindPopup(
+              `<strong>${escapeHtml(c.name)}</strong><br>${escapeHtml(c.place)}<br>${escapeHtml(c.desc)}`,
+            );
+          marker.on("click", () => {
+            selected = c.id;
+            renderCrafts();
+          });
+        });
+        document.querySelectorAll(".entry").forEach((el) => {
+          function open() {
+            const c = crafts.find((x) => x.id === Number(el.dataset.id));
+            selected = c.id;
+            map.setView([c.lat, c.lng], 9);
+            renderCrafts();
+          }
+          el.addEventListener("click", open);
+          el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") open();
+          });
+        });
+      }
+      function safeUrl(value) {
+        try {
+          const u = new URL(value);
+          return ["https:", "http:"].includes(u.protocol) ? u.href : null;
+        } catch (e) {
+          return null;
+        }
+      }
+      function renderSources() {
+        const total = sources.length,
+          official = sources.filter((x) => x.type === "official").length,
+          okTotal = total >= 7,
+          okOfficial = official >= 3;
+        $("sourceCount").textContent = total + " / 7";
+        $("officialCount").textContent = official + " / 3";
+        $("totalCard").className = "stat " + (okTotal ? "good" : "warn");
+        $("officialCard").className = "stat " + (okOfficial ? "good" : "warn");
+        $("totalHint").textContent = okTotal
+          ? "✓ Đã đạt số lượng tối thiểu"
+          : "⚠ Chưa đủ tối thiểu 7 nguồn";
+        $("officialHint").textContent = okOfficial
+          ? "✓ Đã đạt yêu cầu nguồn chính thống"
+          : "⚠ Chưa đủ 3 nguồn chính thống";
+        const done = okTotal && okOfficial;
+        $("sourceStatus").className = "status" + (done ? " ok" : "");
+        $("sourceStatus").textContent = done
+          ? "✓ Đã đạt yêu cầu: tối thiểu 7 nguồn, trong đó có ít nhất 3 nguồn chính thống."
+          : `Chưa đạt: cần thêm ${Math.max(0, 7 - total)} nguồn tổng cộng và ${Math.max(0, 3 - official)} nguồn chính thống (hai điều kiện đều phải thỏa mãn).`;
+        $("sourceList").innerHTML = sources.length
+          ? sources
+              .map(
+                (s, i) =>
+                  `<div class="src"><div><strong>${escapeHtml(s.name)}</strong><small>${s.type === "official" ? "● Nguồn chính thống" : "○ Nguồn khác"} · <a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">Xem tư liệu ↗</a></small></div><button class="delete" data-index="${i}" aria-label="Xóa nguồn ${escapeHtml(s.name)}">Xóa</button></div>`,
+              )
+              .join("")
+          : '<div class="empty">Chưa có nguồn tư liệu nào. Hãy thêm nguồn có đường dẫn để bắt đầu kiểm đếm.</div>';
+        document.querySelectorAll(".delete").forEach((b) =>
+          b.addEventListener("click", () => {
+            sources.splice(Number(b.dataset.index), 1);
+            saveSources();
+          }),
+        );
+      }
+      function saveSources() {
+        try {
+          localStorage.setItem("dauNgheSources", JSON.stringify(sources));
+        } catch (e) {}
+        renderSources();
+      }
+      $("sourceForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = $("sourceName").value.trim(),
+          url = safeUrl($("sourceUrl").value.trim()),
+          type = $("sourceType").value;
+        if (!name || !url) {
+          alert("Vui lòng nhập tên nguồn và đường dẫn http/https hợp lệ.");
+          return;
+        }
+        if (sources.some((x) => x.url === url)) {
+          alert("Đường dẫn này đã được thêm.");
+          return;
+        }
+        sources.push({ name, url, type });
+        saveSources();
+        $("sourceForm").reset();
+        $("sourceName").focus();
+      });
+      $("search").addEventListener("input", renderCrafts);
+      $("region").addEventListener("change", renderCrafts);
+      $("craftCount").textContent = crafts.length;
+      $("provinceCount").textContent = new Set(crafts.map((c) => c.place)).size;
+      renderCrafts();
+      renderSources();
+    </script>
+  </body>
+</html>
